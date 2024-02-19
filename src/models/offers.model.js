@@ -21,4 +21,4 @@ const offersSchema = new Schema({
 
 })
 
-export const OfferUser = mongoose.model("OfferUser", offersSchema)
+export const Offer = mongoose.model("Offer", offersSchema)
