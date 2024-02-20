@@ -18,7 +18,9 @@ const offersSchema = new Schema({
         required: [true, 'Location is required'],
         lowercase: true
     }],
-
+    isActive:{
+        type: boolean
+    }
 })
 
 export const Offer = mongoose.model("Offer", offersSchema)

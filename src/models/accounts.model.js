@@ -1,4 +1,5 @@
 import mongoose, {Schema} from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const supplierAddressSchema = new Schema({
     addressLine1: {
@@ -71,5 +72,7 @@ const accountSchema = new Schema({
         type: String
     }
 })
+
+accountSchema.plugin(mongooseAggregatePaginate)
 
 export const Account = mongoose.model("Account", accountSchema)

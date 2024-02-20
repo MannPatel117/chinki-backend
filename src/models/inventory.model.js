@@ -1,4 +1,5 @@
 import mongoose, {Schema} from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const inventorySchema = new Schema({
     location:{
@@ -28,5 +29,7 @@ const inventorySchema = new Schema({
         type: Number
     }
 })
+
+inventorySchema.plugin(mongooseAggregatePaginate)
 
 export const Inventory = mongoose.model("Inventory", inventorySchema)

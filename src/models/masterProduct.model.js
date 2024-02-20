@@ -1,4 +1,5 @@
 import mongoose, {Schema} from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const masterProductSchema = new Schema({
     itemName:{
@@ -59,5 +60,7 @@ const masterProductSchema = new Schema({
         default: "ACTIVE"
     }
 })
+
+masterProductSchema.plugin(mongooseAggregatePaginate)
 
 export const MasterProduct = mongoose.model("MasterProduct", masterProductSchema)
