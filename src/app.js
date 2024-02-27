@@ -12,4 +12,12 @@ app.use(cors({
 app.use(express.json({limit:"16kb"}))
 app.use(cookieParser())
 
+
+//routes imports
+import adminUserRouter from './routes/adminUser.routes.js'
+
+
+//routes
+app.use("/api/v1/adminUser", adminUserRouter)
+
 export default app

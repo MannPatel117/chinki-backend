@@ -1,4 +1,5 @@
 import mongoose, {Schema} from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const AddressSchema = new Schema({
     addressLine1: {
@@ -64,5 +65,7 @@ const userSchema = new Schema({
         default: 0
     }
 }, {timestamps: true})
+
+userSchema.plugin(mongooseAggregatePaginate)
 
 export const User = mongoose.model("User", userSchema)

@@ -1,4 +1,5 @@
 import mongoose, {Schema} from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const billDetailSchema = new Schema({
     barCode: {
@@ -47,5 +48,6 @@ const masterBillSchema = new Schema({
         required: true
     }
 }, {timestamps: true})
+masterBillSchema.plugin(mongooseAggregatePaginate)
 
 export const MasterBill = mongoose.model("MasterBill", masterBillSchema)
