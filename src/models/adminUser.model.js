@@ -28,19 +28,17 @@ const adminUserSchema = new Schema({
     }
 })
 
-adminUserSchema.methods.generateAccessToken = function(){
+adminUserSchema.methods.generateAccessToken = function(userId){
     return jwt.sign({
-        _id: this._id,
-        location: this.location,
-        role: this.role
+        _id: userId,
     }, process.env.ACCESS_TOKEN_SECRET,
     {
         expiresIn: process.env.ACCESS_TOKEN_EXPIRY
     })
 }
-adminUserSchema.methods.generateRefreshToken = function(){
+adminUserSchema.methods.generateRefreshToken = function(userId){
     return jwt.sign({
-        _id: this._id,
+        _id: userId,
     }, process.env.REFRESH_TOKEN_SECRET,
     {
         expiresIn: process.env.REFRESH_TOKEN_EXPIRY
