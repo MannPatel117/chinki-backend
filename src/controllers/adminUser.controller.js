@@ -120,7 +120,7 @@ const registerAdminUser = asyncHandler(async (req, res) => {
       return res
         .status(409)
         .json(
-          new ApiResponse(409, "COULD NOT GENERATE USER", "INVALID ACTION")
+          new ApiResponse(409, "Could not generate user, please try again later", "ACTION FAILED")
         );
     }
   } else {
@@ -149,7 +149,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     return res
         .status(401)
         .json(
-          new ApiResponse(401, "No Token Found", "Unauthorized request")
+          new ApiResponse(401, "No Token Found", "UNAUTHORIZED REQUEST")
         );
   }
 
@@ -165,7 +165,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     return res
         .status(401)
         .json(
-          new ApiResponse(401, "Invalid refresh token", "Unauthorized request")
+          new ApiResponse(401, "Invalid refresh token", "UNAUTHORIZED REQUEST")
         );
     }
 
@@ -173,7 +173,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     return res
         .status(401)
         .json(
-          new ApiResponse(401, "Refresh token is expired or used", "Token Expired")
+          new ApiResponse(401, "Refresh token is expired or used", "TOKEN EXPIRED")
         );
     }
 
@@ -199,7 +199,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     return res
         .status(401)
         .json(
-          new ApiResponse(401, error?.message || "Invalid refresh token", "Token Expired")
+          new ApiResponse(401, error?.message || "Invalid refresh token", "TOKEN EXPIRED")
         );
   }
 });
@@ -225,7 +225,7 @@ const logoutUser = asyncHandler(async(req, res) => {
     return res
     .status(200)
     .clearCookie("refreshToken", options)
-    .json(new ApiResponse(200, {}, "User logged Out"))
+    .json(new ApiResponse(200, {}, "USER SUCCESSFULLY LOGGED OUT"))
 })
 
 export { loginAdminUser, registerAdminUser, getUser, refreshAccessToken, logoutUser };
