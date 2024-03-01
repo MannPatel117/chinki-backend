@@ -113,7 +113,7 @@ const getProductbyID = asyncHandler(async (req, res) => {
     }
   });
   const getAllProducts = asyncHandler(async (req, res) => {
-    const activeProduct = await MasterProduct.find({ status: 'ACTIVE' });
+    const activeProduct = await MasterProduct.find();
     if(activeProduct){
         return res
           .status(200)
@@ -151,5 +151,23 @@ const getProductbyID = asyncHandler(async (req, res) => {
     }
   });
 
-export { addProduct, editProduct, getProductbyID, getAllProducts, deleteProductbyID };
+  const getAllActiveProducts = asyncHandler(async (req, res) => {
+    const activeProduct = await MasterProduct.find({ status: 'ACTIVE' });
+    if(activeProduct){
+        return res
+          .status(200)
+          .json(
+            new ApiResponse(200, activeProduct, "PRODUCTS FOUND")
+    );
+    }
+    else{
+        return res
+          .status(400)
+          .json(
+            new ApiResponse(400, "Something went wrong, please try again", "ACTION FAILED")
+    ); 
+    }
+  });
+
+export { addProduct, editProduct, getProductbyID, getAllProducts, deleteProductbyID, getAllActiveProducts };
 
