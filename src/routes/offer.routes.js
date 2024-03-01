@@ -8,7 +8,7 @@ router.route("/addOffer").post(verifyJWT, addOffer)
 router.route("/editOffer").patch(verifyJWT, editOffer)
 router.route("/getOffersbyID").get(verifyJWT, getOffersbyID)
 router.route("/getAllOffers").get(verifyJWT, getAllOffers)
-router.route("/deleteOfferbyID").get(verifyJWT, deleteOfferbyID)
+router.route("/deleteOfferbyID").post(verifyJWT, deleteOfferbyID)
 router.route("/addBillinOffer").post(verifyJWT, addBillinOffer)
 router.route("/getAllActiveOffers").get(verifyJWT, getAllActiveOffers)
 
