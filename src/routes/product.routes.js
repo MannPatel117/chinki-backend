@@ -8,7 +8,7 @@ router.route("/addProducts").post(verifyJWT, addProduct)
 router.route("/editProducts").patch(verifyJWT, editProduct)
 router.route("/getProductbyID").get(verifyJWT, getProductbyID)
 router.route("/getAllProducts").get(verifyJWT, getAllProducts)
-router.route("/deleteProductbyID").get(verifyJWT, deleteProductbyID)
+router.route("/deleteProductbyID").post(verifyJWT, deleteProductbyID)
 router.route("/getAllActiveProducts").get(verifyJWT, getAllActiveProducts)
 
 
