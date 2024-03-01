@@ -19,8 +19,11 @@ const offersSchema = new Schema({
         lowercase: true
     }],
     isActive:{
-        type: boolean
-    }
+        type: Boolean
+    },
+    appliedonBill:[{
+        type: String
+    }]
 })
 
 export const Offer = mongoose.model("Offer", offersSchema)
