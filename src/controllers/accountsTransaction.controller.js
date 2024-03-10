@@ -1,59 +1,156 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { accountTransaction } from "../models/accountsTransaction.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { Inventory } from "../models/inventory.model.js"
+import { MasterProduct } from "../models/masterProduct.model.js";
 
-const addTransaction = asyncHandler(async (req, res) => {
-  const offer = req.body;
-  const {
-    supplierID,
-    accountName,
-    aliasName,
-    phone_Number,
-    address,
-    subGroup,
-    underGroup,
-    paymentTerm,
-    gstNumber,
-    balance,
-    email
-  } = req.body;
-  let missingArray = [];
-  for (const key in offer) {
-    if (offer[key] === "" || offer[key] === null) {
-      missingArray.push(key);
+  const addTransactionSupply = asyncHandler(async (req, res) => {
+    const offer = req.body;
+    const {
+      challanNumber,
+      challanDate,
+      documentNumber,
+      supplier,
+      billNumber,
+      billDate,
+      transactionType,
+      billDetails,
+      finalAmt,
+      location
+    } = req.body;
+    let missingArray = [];
+    for (const key in offer) {
+      if (offer[key] === "" || offer[key] === null) {
+        missingArray.push(key);
+      }
     }
-  }
-  if (missingArray.length !== 0) {
-    return res
-      .status(400)
-      .json(new ApiResponse(400, missingArray, "SOME FIELDS ARE MISSING"));
-  } else {
-    const AccountExists = await Account.findOne({
-        $or: [{ accountName }, { aliasName }, { supplierID }],
-      });
-    if (AccountExists) {
+    if (missingArray.length !== 0) {
       return res
-        .status(409)
-        .json(new ApiResponse(409, AccountExists, "ACCOUNT ALREADY EXISTS"));
+        .status(400)
+        .json(new ApiResponse(400, missingArray, "SOME FIELDS ARE MISSING"));
     } else {
-      const accountCreated = await Account.create({
-        supplierID,
-        accountName,
-        aliasName,
-        phone_Number,
-        address,
-        subGroup,
-        underGroup,
-        paymentTerm,
-        gstNumber,
-        balance,
-        email
+      const inventoryExists = await Inventory.find({ location:location });
+      if(inventoryExists.length == 1){
+        const currentProducts = inventoryExists[0].inventoryProducts;
+        const inventoryObject = {};
+
+        currentProducts.forEach(item => {
+            inventoryObject[String(item.product)] = item;
+        });
+
+        for (const barcodeItem of billDetails) {
+          const productId = String(barcodeItem.barCode);
+          const inventoryItemIndex = currentProducts.findIndex(item => String(item.product) === productId);
+          if (inventoryItemIndex !== -1) {
+              currentProducts[inventoryItemIndex].quantity += barcodeItem.quantity;
+          } else {
+              try {
+                  const productSchema = await MasterProduct.findById(barcodeItem.barCode);
+                  const prod = {
+                      product: productSchema._id,
+                      quantity: barcodeItem.quantity
+                  };
+                  currentProducts.push(prod);
+              } catch (error) {
+                  console.error("Error fetching product:", error);
+              }
+          }
+        }
+      const updatedInventory = await Inventory.findByIdAndUpdate(
+              inventoryExists[0]._id,
+              {
+                  $set: {
+                    inventoryProducts:currentProducts
+                  }    
+              },{
+                  new: true
+              }
+          )   
+      }
+
+        const accountTransactionCreated = await accountTransaction.create({
+          challanNumber,
+          challanDate,
+          documentNumber,
+          supplier,
+          billNumber,
+          billDate,
+          transactionType,
+          paymentType: "",
+          billDetails,
+          chequeno: "",
+          chequeDate: "",
+          finalAmt,
+          location
+        });
+        if (accountTransactionCreated) {
+          return res
+            .status(201)
+            .json(
+              new ApiResponse(201, accountTransactionCreated, "ACCOUNT TRANSACTION RECORDED")
+            );
+        } 
+        else {
+          return res
+            .status(409)
+            .json(
+              new ApiResponse(
+                409,
+                "Could not add account transaction, please try again later",
+                "FAILED TO ADD ACCOUNT TRANSACTION"
+              )
+            );
+        }
+      }
+  });
+
+  const addTransactionPayment = asyncHandler(async (req, res) => {
+    const offer = req.body;
+    const {
+      challanNumber,
+      challanDate,
+      documentNumber,
+      supplier,
+      billNumber,
+      billDate,
+      transactionType,
+      paymentType,
+      chequeNo,
+      chequeDate,
+      finalAmt,
+      location
+    } = req.body;
+    let missingArray = [];
+    for (const key in offer) {
+      if (offer[key] === "" || offer[key] === null) {
+        missingArray.push(key);
+      }
+    }
+    if (missingArray.length !== 0) {
+      return res
+        .status(400)
+        .json(new ApiResponse(400, missingArray, "SOME FIELDS ARE MISSING"));
+    } else {
+      const accountTransactionCreated = await accountTransaction.create({
+        challanNumber,
+        challanDate,
+        documentNumber,
+        supplier,
+        billNumber,
+        billDate,
+        transactionType,
+        paymentType,
+        billDetails: [],
+        chequeNo,
+        chequeDate,
+        finalAmt,
+        location
       });
-      if (accountCreated) {
+      if (accountTransactionCreated) {
         return res
           .status(201)
           .json(
-            new ApiResponse(201, accountCreated, "ACCOUNT SUCCESSFULLY CREATED")
+            new ApiResponse(201, accountTransactionCreated, "ACCOUNT TRANSACTION RECORDED")
           );
       } else {
         return res
@@ -61,45 +158,104 @@ const addTransaction = asyncHandler(async (req, res) => {
           .json(
             new ApiResponse(
               409,
-              "Could not add account, please try again later",
-              "FAILED TO ADD ACCOUNT"
+              "Could not add account transaction, please try again later",
+              "FAILED TO ADD TRANSACTION RECORD"
             )
           );
       }
     }
-  }
-});
+  });
 
-const editTransaction = asyncHandler(async (req, res) => {
-  const accountReq = req.body;
-  let id= accountReq?._id;
-  delete accountReq._id;
-  const updatedAccount = await Account.findByIdAndUpdate(
-    id,
-    {
-        $set: accountReq
-    },
-    {
-        new: true
+  const editTransactionSupply = asyncHandler(async (req, res) => {
+    const transactionReq = req.body;
+    let id= transactionReq?._id;
+    delete transactionReq._id;
+    let curr_location=transactionReq?.location;
+    delete transactionReq?.location;
+    if(transactionReq.billDetails){
+      const inventoryExists = await Inventory.find({ location:curr_location });
+      const currentProducts = inventoryExists[0].inventoryProducts;
+      const inventoryObject = {};
+      currentProducts.forEach(item => {
+          inventoryObject[String(item.product)] = item;
+      });
+      for (const barcodeItem of transactionReq.billDetails) {
+        const productId = String(barcodeItem.barCode);
+        const inventoryItemIndex = currentProducts.findIndex(item => String(item.product) === productId);
+        if (inventoryItemIndex !== -1) {
+          currentProducts[inventoryItemIndex].quantity=(currentProducts[inventoryItemIndex].quantity + barcodeItem.quantity) - barcodeItem.current;
+        }
+      }
+  
+      const updatedInventory = await Inventory.findByIdAndUpdate(
+        inventoryExists[0]._id,
+        {
+            $set: {
+              inventoryProducts:currentProducts
+            }    
+        },{
+            new: true
+        }
+      )
+      console.log(updatedInventory)
+      const currentTransaction = await accountTransaction.findById(id);
+      const currentBillDetails = currentTransaction.billDetails;
+      for(let i=0; i < transactionReq.billDetails.length; i++){
+        for(let j=0; j< currentBillDetails.length; j++){
+          if(transactionReq.billDetails[i].barCode == currentBillDetails[j].barCode){
+            currentBillDetails[j].quantity = transactionReq.billDetails[i].quantity;
+          }
+        }
+      }
+      transactionReq.billDetails = currentBillDetails;
     }
-  )
-  return res
-        .status(200)
-        .json(
-          new ApiResponse(200, updatedAccount, "ACCOUNT SUCCESSFULLY UPDATED")
-        );
-});
+    
+    const updatedAccountTransaction = await accountTransaction.findByIdAndUpdate(
+      id,
+      {
+          $set: transactionReq
+      },
+      {
+          new: true
+      }
+    )
+    return res
+          .status(200)
+          .json(
+            new ApiResponse(200, updatedAccountTransaction, "ACCOUNT SUCCESSFULLY UPDATED")
+          );
+  });
 
-const getTransactionbyID = asyncHandler(async (req, res) => {
+  const editTransactionPayment = asyncHandler(async (req, res) => {
+    const transactionReq = req.body;
+    let id= transactionReq?._id;
+    delete transactionReq._id;
+    const updatedAccountTransaction = await accountTransaction.findByIdAndUpdate(
+      id,
+      {
+          $set: transactionReq
+      },
+      {
+          new: true
+      }
+    )
+    return res
+          .status(200)
+          .json(
+            new ApiResponse(200, updatedAccountTransaction, "ACCOUNT SUCCESSFULLY UPDATED")
+          );
+  });
+
+  const getTransactionbyID = asyncHandler(async (req, res) => {
     let id= req.body?._id;
-    const accountFound = await Account.findById(
+    const accountTransactionFound = await accountTransaction.findById(
       id
     )
-    if(accountFound){
+    if(accountTransactionFound){
         return res
           .status(200)
           .json(
-            new ApiResponse(200, accountFound, "ACCOUNT FOUND")
+            new ApiResponse(200, accountTransactionFound, "ACCOUNT TRANSACTION FOUND")
     );
     }
     else{
@@ -116,7 +272,7 @@ const getTransactionbyID = asyncHandler(async (req, res) => {
         return res
           .status(200)
           .json(
-            new ApiResponse(200, accounts, "ACCOUNTS TRANSACTION FOUND")
+            new ApiResponse(200, accountsTransaction, "ACCOUNTS TRANSACTION FOUND")
     );
     }
     else{
@@ -149,5 +305,5 @@ const getTransactionbyID = asyncHandler(async (req, res) => {
     }
   });
 
-export { addTransaction, editTransaction, getTransactionbyID, getAllTransaction, deleteTransactionbyID };
+export { addTransactionSupply, addTransactionPayment, editTransactionSupply, editTransactionPayment, getTransactionbyID, getAllTransaction, deleteTransactionbyID };
 

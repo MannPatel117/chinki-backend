@@ -5,7 +5,6 @@ const inventorySchema = new Schema({
     location:{
         type: String,
         required: true,
-        unique: true,
         lowercase: true
     },
     inventoryProducts: [{
@@ -19,15 +18,9 @@ const inventorySchema = new Schema({
         },
         lowWarning:{
             type: Number,
-            default: 0
+            default: 10
         }
-    }],
-    billNumber:{
-        type: Number
-    },
-    invoiceNumber:{
-        type: Number
-    }
+    }]
 })
 
 inventorySchema.plugin(mongooseAggregatePaginate)

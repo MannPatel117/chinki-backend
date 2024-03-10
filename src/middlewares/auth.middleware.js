@@ -4,9 +4,8 @@ import { AdminUser } from "../models/adminUser.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js"
 
 export const verifyJWT = asyncHandler(async(req, res, next) => {
-    try {
-        const token = req.header("Authorization")?.replace("Bearer ", "")
-
+    try { 
+        const token = req.header("Authorization")?.replace("Bearer ", "");
         if (!token) {
             return res.status(401).json(
                 new ApiResponse(401, "No Token Found", "TOKEN ERROR")

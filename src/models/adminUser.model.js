@@ -20,7 +20,7 @@ const adminUserSchema = new Schema({
     },
     role:{
         type: String,
-        enum: ["MASTER", "STORE"],
+        enum: ["MASTER", "STORE", "SUPER-ADMIN"],
         default: "STORE"
     },
     refreshToken: {

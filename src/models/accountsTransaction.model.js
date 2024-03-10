@@ -41,7 +41,7 @@ const accountsTransactionSchema = new Schema({
     },
     paymentType:{
         type: String,
-        enum: ["Cash", "Online", "Cheque"],
+        enum: ["Cash", "Online", "Cheque", ""],
         default: "Cash"
     },
     billDetails:{
