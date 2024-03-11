@@ -20,7 +20,15 @@ const inventorySchema = new Schema({
             type: Number,
             default: 10
         }
-    }]
+    }],
+    billNumber:{
+        type: Number,
+        default: 0
+    },
+    invoiceNumber:{
+        type: Number,
+        default: 0
+    }
 })
 
 inventorySchema.plugin(mongooseAggregatePaginate)

@@ -3,7 +3,7 @@ import { Account } from "../models/accounts.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const addAccount = asyncHandler(async (req, res) => {
-  const offer = req.body;
+  const account = req.body;
   const {
     supplierID,
     accountName,
@@ -18,8 +18,8 @@ const addAccount = asyncHandler(async (req, res) => {
     email
   } = req.body;
   let missingArray = [];
-  for (const key in offer) {
-    if (offer[key] === "" || offer[key] === null) {
+  for (const key in account) {
+    if (account[key] === "" || account[key] === null) {
       missingArray.push(key);
     }
   }

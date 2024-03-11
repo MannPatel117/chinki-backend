@@ -5,7 +5,7 @@ import { Inventory } from "../models/inventory.model.js"
 import { MasterProduct } from "../models/masterProduct.model.js";
 
   const addTransactionSupply = asyncHandler(async (req, res) => {
-    const offer = req.body;
+    const transaction = req.body;
     const {
       challanNumber,
       challanDate,
@@ -19,8 +19,8 @@ import { MasterProduct } from "../models/masterProduct.model.js";
       location
     } = req.body;
     let missingArray = [];
-    for (const key in offer) {
-      if (offer[key] === "" || offer[key] === null) {
+    for (const key in transaction) {
+      if (transaction[key] === "" || transaction[key] === null) {
         missingArray.push(key);
       }
     }
@@ -105,7 +105,7 @@ import { MasterProduct } from "../models/masterProduct.model.js";
   });
 
   const addTransactionPayment = asyncHandler(async (req, res) => {
-    const offer = req.body;
+    const transaction = req.body;
     const {
       challanNumber,
       challanDate,
@@ -121,8 +121,8 @@ import { MasterProduct } from "../models/masterProduct.model.js";
       location
     } = req.body;
     let missingArray = [];
-    for (const key in offer) {
-      if (offer[key] === "" || offer[key] === null) {
+    for (const key in transaction) {
+      if (transaction[key] === "" || transaction[key] === null) {
         missingArray.push(key);
       }
     }
@@ -266,6 +266,7 @@ import { MasterProduct } from "../models/masterProduct.model.js";
     ); 
     }
   });
+  
   const getAllTransaction = asyncHandler(async (req, res) => {
     const accountsTransaction = await accountTransaction.find();
     if(accountsTransaction){
