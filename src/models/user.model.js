@@ -50,16 +50,6 @@ const userSchema = new Schema({
     rewardPointsHistory:{
         type: [rewardHistorySchema]
     },
-    transactionHistory:[{
-        billNumber:{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Bill'
-        },
-        finalAmount:{
-            type: Number
-        }
-    },
-    {timestamps: true}],
     totalTransaction:{
         type: Number,
         default: 0

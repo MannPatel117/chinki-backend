@@ -17,6 +17,7 @@ import offerRouter from './routes/offer.routes.js'
 import accountRouter from './routes/account.routes.js'
 import accountTransaction from './routes/accountsTransaction.routes.js'
 import inventory from './routes/inventory.routes.js'
+import users from './routes/users.routes.js'
 
 //routes
 app.use("/api/v1/adminUser", adminUserRouter)
@@ -25,5 +26,6 @@ app.use("/api/v1/offers", offerRouter)
 app.use("/api/v1/accounts", accountRouter)
 app.use("/api/v1/accountsTransaction", accountTransaction)
 app.use("/api/v1/inventory", inventory)
+app.use("/api/v1/users", users)
 
 export default app
