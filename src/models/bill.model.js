@@ -20,11 +20,12 @@ const BillSchema = new Schema({
     },
     billNumber:{
         type: String,
-        required: [true, 'Invoice Number is required'],
+        required: [true, 'Bill Number is required'],
         index: true
     },
     phnNumber:{
-        type: Number
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     },
     customerType:{
         type: String,

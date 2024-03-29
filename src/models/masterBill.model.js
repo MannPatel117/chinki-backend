@@ -24,7 +24,8 @@ const masterBillSchema = new Schema({
         index: true
     },
     phnNumber:{
-        type: Number
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     },
     customerType:{
         type: String,
@@ -38,6 +39,10 @@ const masterBillSchema = new Schema({
     },
     billDetails:{
         type: [billDetailSchema]
+    },
+    rewardPointsUsed: {
+        type: Number,
+        default: 0
     },
     finalAmt:{
         type: Number,
