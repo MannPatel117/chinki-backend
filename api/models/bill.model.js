@@ -1,7 +1,7 @@
 import mongoose, {Schema} from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
-const billDetailSchema = new Schema({
+const finishedBillDetailSchema = new Schema({
     barCode: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'MasterProduct'
@@ -12,7 +12,7 @@ const billDetailSchema = new Schema({
     }
 })
 
-const masterBillSchema = new Schema({
+const BillSchema = new Schema({
     invoiceNumber:{
         type: Number,
         required: [true, 'Invoice Number is required'],
@@ -20,11 +20,12 @@ const masterBillSchema = new Schema({
     },
     billNumber:{
         type: String,
-        required: [true, 'Invoice Number is required'],
+        required: [true, 'Bill Number is required'],
         index: true
     },
     phnNumber:{
-        type: Number
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     },
     customerType:{
         type: String,
@@ -37,7 +38,7 @@ const masterBillSchema = new Schema({
         default: "Cash"
     },
     billDetails:{
-        type: [billDetailSchema]
+        type: [finishedBillDetailSchema]
     },
     finalAmt:{
         type: Number,
@@ -48,6 +49,7 @@ const masterBillSchema = new Schema({
         required: true
     }
 }, {timestamps: true})
-masterBillSchema.plugin(mongooseAggregatePaginate)
 
-export const MasterBill = mongoose.model("MasterBill", masterBillSchema)
+BillSchema.plugin(mongooseAggregatePaginate)
+
+export const Bill = mongoose.model("Bill", BillSchema)
