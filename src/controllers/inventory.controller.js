@@ -205,9 +205,9 @@ import { ApiResponse } from "../utils/ApiResponse.js";
   });
 
   const getInventorybyLocation = asyncHandler(async (req, res) => {
-    let location= req.body?.location;
+    let storelocation= req.query.location;
     const inventoryFound = await Inventory.find({
-      location: location
+      location: storelocation
     })
     if(inventoryFound){
         return res
