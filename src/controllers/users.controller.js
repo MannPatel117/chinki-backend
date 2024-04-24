@@ -115,7 +115,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
   });
 
   const getUserbyNumber = asyncHandler(async (req, res) => {
-    let userNumber= req.body?.phone_Number;
+    let userNumber= req.query.phone_Number;
     const users = await User.find({phone_Number: userNumber});
     if(users){
         return res
