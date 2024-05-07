@@ -31,11 +31,10 @@ const addOffer = asyncHandler(async (req, res) => {
         .status(409)
         .json(new ApiResponse(409, offerExists, "OFFER ALREADY EXISTS"));
     } else {
-      const productSchema = await MasterProduct.findById(product);
       const offerCreated = await Offer.create({
         offerName,
         minimumPrice,
-        product:productSchema,
+        product,
         location,
         isActive
       });
