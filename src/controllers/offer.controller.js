@@ -181,7 +181,7 @@ const getOffersbyID = asyncHandler(async (req, res) => {
   });
 
   const getAllActiveOffers = asyncHandler(async (req, res) => {
-    const activeOffers = await Offer.find({ isActive: true });
+    const activeOffers = await Offer.find({ isActive: true }).select('-isActive -appliedonBill');
     if(activeOffers){
         return res
           .status(200)
