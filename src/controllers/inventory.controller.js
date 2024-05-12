@@ -208,7 +208,28 @@ import { ApiResponse } from "../utils/ApiResponse.js";
     let storelocation= req.query.location;
     const inventoryFound = await Inventory.find({
       location: storelocation
-    })
+    }).select('-inventoryProducts -__v')
+    if(inventoryFound){
+        return res
+          .status(200)
+          .json(
+            new ApiResponse(200, inventoryFound, "INVENTORY FOUND")
+    );
+    }
+    else{
+        return res
+          .status(400)
+          .json(
+            new ApiResponse(400, "Something went wrong, please try again", "ACTION FAILED")
+    ); 
+    }
+  });
+
+  const getInventoryDetailsbyLocation = asyncHandler(async (req, res) => {
+    let storelocation= req.query.location;
+    const inventoryFound = await Inventory.find({
+      location: storelocation
+    }).select('-__v')
     if(inventoryFound){
         return res
           .status(200)
@@ -274,5 +295,5 @@ import { ApiResponse } from "../utils/ApiResponse.js";
   });
 
 // editLowWarning
-export { addInventory, updateBillNumber, updateInvoiceNumber, editLowWarning, getInventorybyLocation, getAllInventory, deleteInventorybyID };
+export { addInventory, updateBillNumber, updateInvoiceNumber, editLowWarning, getInventorybyLocation, getInventoryDetailsbyLocation, getAllInventory, deleteInventorybyID };
 

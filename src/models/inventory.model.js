@@ -12,6 +12,9 @@ const inventorySchema = new Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'MasterProduct'
         },
+        barcode:{
+            type: String
+        },
         quantity: {
             type: Number,
             default: 0 
