@@ -21,7 +21,7 @@ import accountTransaction from './routes/accountsTransaction.routes.js'
 import inventory from './routes/inventory.routes.js'
 import users from './routes/users.routes.js'
 import bill from './routes/masterBill.routes.js'
-
+import print from './routes/printer.routes.js'
 //routes
 app.use("/api/v1/adminUser", adminUserRouter)
 app.use("/api/v1/products", productsRouter)
@@ -31,5 +31,6 @@ app.use("/api/v1/accountsTransaction", accountTransaction)
 app.use("/api/v1/inventory", inventory)
 app.use("/api/v1/users", users)
 app.use("/api/v1/masterBill", bill)
+app.use("/api/v1/print", print)
 
 export default app
