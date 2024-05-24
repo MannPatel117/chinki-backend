@@ -1,31 +1,63 @@
 import mongoose, {Schema} from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
-const finishedBillDetailSchema = new Schema({
-    barCode: {
+const billDetailSchema = new Schema({
+    product_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'MasterProduct'
     },
     quantity: {
-        type: Number,
-        required: true
+        type: Number
+    },
+    mrp: {
+        type: Number
+    },
+    discount: {
+        type: Number
+    },
+    rate: {
+        type: Number
+    },
+    amount: {
+        type: Number
+    },
+    gst: {
+        type: Number
+    },
+    gstAmount: {
+        type: Number
+    },
+    finalAmount:{
+        type: Number
+    }
+})
+
+const OfferSchema = new Schema({
+    offer_id: {
+        type: String,
+    },
+    offer_name:{
+        type: String,
+    },
+    product_id:{
+        type: String,
+    },
+    mrp: {
+        type: Number
     }
 })
 
 const BillSchema = new Schema({
     invoiceNumber:{
         type: Number,
-        required: [true, 'Invoice Number is required'],
-        index: true
     },
     billNumber:{
-        type: String,
+        type: Number,
         required: [true, 'Bill Number is required'],
         index: true
     },
     phnNumber:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        type: String,
     },
     customerType:{
         type: String,
@@ -34,11 +66,15 @@ const BillSchema = new Schema({
     },
     paymentType:{
         type: String,
-        enum: ["Cash", "Online"],
-        default: "Cash"
+        enum: ["cash", "upi"],
+        default: "cash"
     },
     billDetails:{
-        type: [finishedBillDetailSchema]
+        type: [billDetailSchema]
+    },
+    rewardPointsUsed: {
+        type: Number,
+        default: 0
     },
     finalAmt:{
         type: Number,
@@ -47,6 +83,9 @@ const BillSchema = new Schema({
     location:{
         type: String,
         required: true
+    },
+    offerApplied:{
+        type: OfferSchema
     }
 }, {timestamps: true})
 

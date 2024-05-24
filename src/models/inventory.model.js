@@ -26,11 +26,9 @@ const inventorySchema = new Schema({
     }],
     billNumber:{
         type: Number,
-        default: 0
     },
     invoiceNumber:{
         type: Number,
-        default: 0
     }
 })
 
