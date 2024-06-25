@@ -228,4 +228,21 @@ const logoutUser = asyncHandler(async(req, res) => {
     .json(new ApiResponse(200, {}, "USER SUCCESSFULLY LOGGED OUT"))
 })
 
-export { loginAdminUser, registerAdminUser, getUser, refreshAccessToken, logoutUser };
+const verifySession = asyncHandler(async(req, res) => {
+  try { 
+    const token = req.header("Authorization")?.replace("Bearer ", "");
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+    if (decodedToken) {
+        return res.status(200).json(
+            new ApiResponse(200, "SUCCESS", "SUCCESS")
+        )
+    }
+    req.user = user;
+  } catch (error) {
+    return res.status(201).json(
+        new ApiResponse(201, error, "TOKEN ERROR")
+    )
+  }
+})
+
+export { loginAdminUser, registerAdminUser, getUser, refreshAccessToken, logoutUser, verifySession };

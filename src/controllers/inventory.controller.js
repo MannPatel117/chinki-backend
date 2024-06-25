@@ -1,5 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Inventory } from "../models/inventory.model.js";
+import { MasterProduct } from "../models/masterProduct.model.js";
+import { Account } from "../models/accounts.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
   const addInventory = asyncHandler(async (req, res) => {
@@ -294,6 +296,105 @@ import { ApiResponse } from "../utils/ApiResponse.js";
     
   });
 
+  //PERFECT FUNCTIONS
+
+  const lowInventory = asyncHandler(async(req,res) =>{
+    let storelocation= req.query.location;
+    const inventory = await Inventory.aggregate([
+      { $match: { location: storelocation } },
+      { $unwind: "$inventoryProducts" },
+      { 
+        $match: { 
+          $expr: { $lt: ["$inventoryProducts.quantity", "$inventoryProducts.lowWarning"] }
+        }
+      },
+      { 
+        $group: {
+            _id: "$_id",
+            location: { $first: "$location" },
+            inventoryProducts: { $push: "$inventoryProducts" }
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          location: 1,
+          inventoryProducts: 1
+        }
+      }
+    ]);
+    console.log(inventory)
+    if(inventory){
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, inventory, "Low Stock Inventory Found")
+      );
+    }
+    else{
+      return res
+      .status(400)
+      .json(
+        new ApiResponse(400, "Something went wrong, please try again", "ACTION FAILED")
+      ); 
+    }
+  })
+
+  const inventoryStats = asyncHandler(async(req,res) =>{
+    let storelocation= req.query.location;
+    const lowStockCount = await getLowStockCount(storelocation);
+    const totalActiveProductCount = await MasterProduct.countDocuments({ status: 'ACTIVE' })
+    const totalProductCount = await MasterProduct.countDocuments({});
+    const totalAccountCount = await Account.countDocuments({});
+    const result = {
+      'lowStockCount': lowStockCount,
+      'totalActiveProductCount': totalActiveProductCount,
+      'totalProductCount' : totalProductCount,
+      'totalAccountCount' : totalAccountCount
+    }
+    if(lowStockCount && totalActiveProductCount && totalProductCount && totalAccountCount){
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, result, "Inventory Stats")
+      );
+    }
+    else{
+      return res
+      .status(400)
+      .json(
+        new ApiResponse(400, "Something went wrong, please try again", "ACTION FAILED")
+      ); 
+    }
+  })
+
+  async function getLowStockCount(storeLocation){
+    const inventory = await Inventory.aggregate([
+      { $match: { location: storeLocation } },
+      { $unwind: "$inventoryProducts" },
+      { 
+        $match: { 
+          $expr: { $lt: ["$inventoryProducts.quantity", "$inventoryProducts.lowWarning"] }
+        }
+      },
+      { 
+        $group: {
+          _id: null,
+          lowInventoryCount: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+            _id: 0,
+            lowInventoryCount: 1
+        }
+      }
+    ]);
+    return inventory[0].lowInventoryCount
+  }
+
+
+
 // editLowWarning
-export { addInventory, updateBillNumber, updateInvoiceNumber, editLowWarning, getInventorybyLocation, getInventoryDetailsbyLocation, getAllInventory, deleteInventorybyID };
+export { addInventory, updateBillNumber, updateInvoiceNumber, editLowWarning, getInventorybyLocation, getInventoryDetailsbyLocation, getAllInventory, deleteInventorybyID, lowInventory, inventoryStats };
 
