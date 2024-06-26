@@ -300,6 +300,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
   const lowInventory = asyncHandler(async(req,res) =>{
     let storelocation= req.query.location;
+    let search = req.query.search;
     const inventory = await Inventory.aggregate([
       { $match: { location: storelocation } },
       { $unwind: "$inventoryProducts" },
@@ -308,22 +309,56 @@ import { ApiResponse } from "../utils/ApiResponse.js";
           $expr: { $lt: ["$inventoryProducts.quantity", "$inventoryProducts.lowWarning"] }
         }
       },
-      { 
-        $group: {
-            _id: "$_id",
-            location: { $first: "$location" },
-            inventoryProducts: { $push: "$inventoryProducts" }
+      {
+        $lookup: {
+          from: "masterproducts", // The name of the MasterProduct collection
+          localField: "inventoryProducts.product", // Field from Inventory collection
+          foreignField: "_id", // Field from MasterProduct collection
+          as: "productDetails" // Output array field
         }
       },
+      { $unwind: "$productDetails" }, // Unwind the productDetails array
       {
+        // Add search functionality here
+        $match: search ? { "productDetails.itemName": { $regex: search, $options: "i" } } : {}
+      },
+      {
+        $lookup: {
+          from: "accounts",
+          let: { supplierId: { $toObjectId: "$productDetails.supplierId" } },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$supplierId"] } } }
+          ],
+          as: "supplierDetails"
+        }
+      },
+      { $unwind: { path: "$supplierDetails", preserveNullAndEmptyArrays: true } },
+      { 
+        $group: {
+          _id: "$_id",
+          location: { $first: "$location" },
+          inventoryProducts: { 
+            $push: {
+              _id: "$productDetails._id",
+              product: "$productDetails.itemName",
+              quantity: "$inventoryProducts.quantity",
+              lowWarning: "$inventoryProducts.lowWarning",
+              supplierId: "$productDetails.supplierId",
+              supplierName: "$supplierDetails.accountName",
+            }
+          }
+        }
+      },
+      { 
         $project: {
           _id: 1,
           location: 1,
+          productDetails: 1,
+          supplierDetails: 1,
           inventoryProducts: 1
         }
       }
     ]);
-    console.log(inventory)
     if(inventory){
       return res
         .status(200)

@@ -25,6 +25,9 @@ const masterProductSchema = new Schema({
         enum: ["Finished", "Estimated"],
         default: "store"
     },
+    supplierId:{
+        type: String
+    },
     unit:{
         type: String,
         uppercase: true
