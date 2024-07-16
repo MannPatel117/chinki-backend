@@ -149,5 +149,23 @@ import { ApiResponse } from "../utils/ApiResponse.js";
     }
   });
 
-export { addAccount, editAccount, getAccountbyID, getAllAccounts, deleteAccountbyID };
+  const getAccounts = asyncHandler(async (req, res) => {
+    const accounts = await Account.find({}, 'accountName')
+    if(accounts){
+        return res
+          .status(200)
+          .json(
+            new ApiResponse(200, accounts, "ACCOUNTS FOUND")
+    );
+    }
+    else{
+        return res
+          .status(400)
+          .json(
+            new ApiResponse(400, "Something went wrong, please try again", "ACTION FAILED")
+    ); 
+    }
+  }); 
+
+export { addAccount, editAccount, getAccountbyID, getAllAccounts, deleteAccountbyID, getAccounts };
 
