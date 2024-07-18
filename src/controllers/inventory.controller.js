@@ -165,47 +165,6 @@ import { ApiResponse } from "../utils/ApiResponse.js";
       }
   });
 
-  const editLowWarning= asyncHandler(async (req, res) => {
-    let location= req.body?.location;
-    let productId = req.body?.product;
-    let updatedValue = req.body?.lowWarning;
-      const inventoryFound = await Inventory.find({
-        location: location
-      })
-      if(inventoryFound){ 
-          let currentInventory = inventoryFound[0].inventoryProducts;
-          for(let i=0; i<currentInventory.length; i++){
-            if(currentInventory[i].product == productId){
-              currentInventory[i].lowWarning = updatedValue
-            }
-          }
-          const updatedInventory = await Inventory.findByIdAndUpdate(
-            inventoryFound[0]._id,
-            {
-                $set: {
-                  inventoryProducts:currentInventory
-                }
-            },
-            {
-                new: true
-            }
-          )
-          return res
-            .status(200)
-            .json(
-              new ApiResponse(200, updatedInventory, "INVENTORY UPDATED")
-          );
-            
-      }
-      else{
-          return res
-            .status(400)
-            .json(
-              new ApiResponse(400, "Something went wrong, please try again", "ACTION FAILED")
-      ); 
-      }
-  });
-
   const getInventorybyLocation = asyncHandler(async (req, res) => {
     let storelocation= req.query.location;
     const inventoryFound = await Inventory.find({
@@ -297,6 +256,30 @@ import { ApiResponse } from "../utils/ApiResponse.js";
   });
 
   //PERFECT FUNCTIONS
+
+  const editLowWarning= asyncHandler(async (req, res) => {
+    let location= req.query?.location;
+    let productId = req.body?.product;
+    let updatedValue = req.body?.lowWarning;
+    const inventory = await Inventory.findOneAndUpdate(
+        { location: location, "inventoryProducts.product": productId },
+        { $set: { "inventoryProducts.$.lowWarning": updatedValue } },
+        { new: true }
+    );
+    if(inventory){ 
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, inventory, "INVENTORY UPDATED")
+      );        
+    } else{
+        return res
+          .status(400)
+          .json(
+            new ApiResponse(400, "Something went wrong, please try again", "ACTION FAILED")
+          ); 
+      }
+  });
 
   const lowInventory = asyncHandler(async(req,res) =>{
     let storelocation= req.query.location;
@@ -427,6 +410,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
     ]);
     return inventory[0].lowInventoryCount
   }
+
+
 
 
 
