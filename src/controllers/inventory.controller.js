@@ -284,6 +284,11 @@ import { ApiResponse } from "../utils/ApiResponse.js";
   const lowInventory = asyncHandler(async(req,res) =>{
     let storelocation= req.query.location;
     let search = req.query.search;
+
+    //pagination
+    let page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+    console.log(page, limit)
     const inventory = await Inventory.aggregate([
       { $match: { location: storelocation } },
       { $unwind: "$inventoryProducts" },
@@ -342,12 +347,14 @@ import { ApiResponse } from "../utils/ApiResponse.js";
         }
       }
     ]);
+
     if(inventory){
       return res
         .status(200)
         .json(
           new ApiResponse(200, inventory, "Low Stock Inventory Found")
       );
+      
     }
     else{
       return res
