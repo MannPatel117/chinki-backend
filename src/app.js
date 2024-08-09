@@ -13,7 +13,7 @@ app.get("/", (req, res) => {
     res.status(200).send("Hello From Chinki");
 });
 //routes imports
-import adminUserRouter from './routes/adminUser.routes.js'
+import adminRouter from './routes/admin.routes.js'
 import productsRouter from './routes/product.routes.js'
 import offerRouter from './routes/offer.routes.js'
 import accountRouter from './routes/account.routes.js'
@@ -22,7 +22,7 @@ import inventory from './routes/inventory.routes.js'
 import users from './routes/users.routes.js'
 import bill from './routes/masterBill.routes.js'
 //routes
-app.use("/api/v1/adminUser", adminUserRouter)
+app.use("/api/v1/admin", adminRouter)
 app.use("/api/v1/products", productsRouter)
 app.use("/api/v1/offers", offerRouter)
 app.use("/api/v1/accounts", accountRouter)
