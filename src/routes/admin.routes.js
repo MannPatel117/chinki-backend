@@ -4,8 +4,8 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router()
 
-router.route('/user').post(registerAdmin)
-router.route('/user').get(loginAdmin)
+router.route('/usercreate').post(registerAdmin)
+router.route('/user').post(loginAdmin)
 router.route('/user').patch(verifyJWT, patchAdmin)
 router.route('/user').delete(deleteAdmin)
 router.route('/users').get(getAllAdmin)
