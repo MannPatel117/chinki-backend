@@ -288,7 +288,6 @@ import { ApiResponse } from "../utils/ApiResponse.js";
     //pagination
     let page = parseInt(req.query.page) || 1;
     let limit = parseInt(req.query.limit) || 10;
-    console.log(page, limit)
     const inventory = await Inventory.aggregate([
       { $match: { location: storelocation } },
       { $unwind: "$inventoryProducts" },

@@ -2,46 +2,40 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { MasterProduct } from "../models/masterProduct.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
-const addProduct = asyncHandler(async (req, res) => {
-  const product = req.body;
-  const {
-    itemName,
-    aliasName,
-    barcode,
-    productType,
-    unit,
-    mrp,
-    discount,
-    sellingPrice,
-    wholeSalePrice,
-    gst,
-    hsnCode,
-    status,
-  } = req.body;
-  let missingArray = [];
-  for (const key in product) {
-    if (product[key] === "" || product[key] === null) {
-      missingArray.push(key);
-    }
-  }
-  if (missingArray.length !== 0) {
-    return res
-      .status(400)
-      .json(new ApiResponse(400, missingArray, "SOME FIELDS ARE MISSING"));
-  } else {
+/*
+    Function Name - addProduct
+    Functionality - Creates Product
+*/
+  const addProduct = asyncHandler(async (req, res) => {
+    const {
+      itemName,
+      aliasName,
+      barcode,
+      productType,
+      supplierId,
+      unit,
+      mrp,
+      discount,
+      sellingPrice,
+      wholeSalePrice,
+      gst,
+      hsnCode
+    } = req.body;
     const productExists = await MasterProduct.findOne({
       $or: [{ itemName }, { aliasName }, { barcode }],
     });
     if (productExists) {
       return res
         .status(409)
-        .json(new ApiResponse(409, productExists, "PRODUCT ALREADY EXISTS"));
+        .json(new ApiResponse(409, "", "Product already exists", "Invalid Action"));
     } else {
       const productCreated = await MasterProduct.create({
         itemName,
         aliasName,
         barcode,
         productType,
+        img : "/products/product",
+        supplierId,
         unit,
         mrp,
         discount,
@@ -49,51 +43,47 @@ const addProduct = asyncHandler(async (req, res) => {
         wholeSalePrice,
         gst,
         hsnCode,
-        status,
+        status: "active"
       });
       if (productCreated) {
         return res
           .status(201)
           .json(
-            new ApiResponse(201, productCreated, "PRODUCT SUCCESSFULLY CREATED")
+            new ApiResponse(201, user, "Product created", "Success")
           );
       } else {
         return res
           .status(409)
           .json(
-            new ApiResponse(
-              409,
-              "Could not add product, please try again later",
-              "FAILED TO ADD PRODUCT"
-            )
+            new ApiResponse(409,"", "Could not add product, please try again later", "Action failed")
           );
       }
     }
-  }
-});
+  });
 
-const editProduct = asyncHandler(async (req, res) => {
-  const product = req.body;
-  let id= product?._id;
-  delete product._id;
-  const updatedProduct = await MasterProduct.findByIdAndUpdate(
-    id,
-    {
-        $set: product
-    },
-    {
-        new: true
-    }
-  )
-  return res
-        .status(200)
-        .json(
-          new ApiResponse(200, updatedProduct, "PRODUCT SUCCESSFULLY UPDATED")
-        );
-});
+/*
+    Function Name - editProduct
+    Functionality - Edit Product Details
+*/
 
-const getProductbyID = asyncHandler(async (req, res) => {
-    let id= req.body?._id;
+  const editProduct = asyncHandler(async (req, res) => {
+    const patch = req.body;
+    const id = req.query.id;  
+    const updatedProduct = await MasterProduct.findOneAndUpdate(
+      { _id: id },
+      { $set: patch },
+      { new: true }
+    );
+    return res.status(200).json(new ApiResponse(200, updatedProduct, "Product updated successfully", "Success"));
+  });
+
+/*
+    Function Name - getProductbyID
+    Functionality - Get Product by specific id
+*/
+
+  const getProductbyID = asyncHandler(async (req, res) => {
+    let id= req.params.id;
     const Product = await MasterProduct.findById(
       id
     )
@@ -101,73 +91,91 @@ const getProductbyID = asyncHandler(async (req, res) => {
         return res
           .status(200)
           .json(
-            new ApiResponse(200, Product, "PRODUCT FOUND")
+            new ApiResponse(200, Product, "Product fetched successfully", "Success")
     );
     }
     else{
         return res
-          .status(400)
+          .status(404)
           .json(
-            new ApiResponse(400, "Something went wrong, please try again", "ACTION FAILED")
+            new ApiResponse(404, "", "No product found", "Action Failed")
     ); 
     }
   });
+
+/*
+    Function Name - getAllProducts
+    Functionality - Get All Products with Pagination
+*/
+
   const getAllProducts = asyncHandler(async (req, res) => {
-    const activeProduct = await MasterProduct.find();
-    if(activeProduct){
+    let status= req.query?.status;
+    let productType = req.query?.productType;
+    let search = req.query?.search.trim();
+    let pagination = req.query?.pagination;
+    const matchConditions = {};
+
+    if (status) {
+      matchConditions.status = status;
+    }
+    if (productType) {
+      matchConditions.productType = productType;
+    }
+    if (search) {
+      matchConditions.$or = [
+        { barcode: { $regex: search, $options: "i" } }, 
+        { itemName: { $regex: search, $options: "i" } },
+        { aliasName: { $regex: search, $options: "i" } }
+      ];
+    }
+    //pagination
+    let page = parseInt(req.query.page)
+    let limit = parseInt(req.query.limit)
+    
+    const options = {
+      page: page,
+      limit: limit
+    };
+
+    const pipeline = [{ $match: matchConditions }];
+    let product = await MasterProduct.aggregatePaginate(MasterProduct.aggregate(pipeline), options);
+
+    if(pagination == "false"){
+      product = await MasterProduct.find({
+        status: "active"
+      })
+    }
+
+    if(product){
         return res
           .status(200)
           .json(
-            new ApiResponse(200, activeProduct, "PRODUCTS FOUND")
+            new ApiResponse(200, product, "Products fetched successfully", "Success")
     );
     }
     else{
         return res
-          .status(400)
+          .status(500)
           .json(
-            new ApiResponse(400, "Something went wrong, please try again", "ACTION FAILED")
+            new ApiResponse(500, "", "Something went wrong", "Action Failed")
     ); 
     }
   });
+
+  /*
+    Function Name - getAllProducts
+    Functionality - Get All Products with Pagination
+  */
 
   const deleteProductbyID = asyncHandler(async (req, res) => {
-    let id= req.body?._id;
-    const Product = await MasterProduct.findByIdAndDelete(
-      id
-    )
-    if(Product){
-        return res
-          .status(200)
-          .json(
-            new ApiResponse(200, "Product successfully deleted", "PRODUCT DELETED")
-    );
-    }
-    else{
-        return res
-          .status(400)
-          .json(
-            new ApiResponse(400, "Something went wrong, please try again", "ACTION FAILED")
-    ); 
-    }
+      const id = req.query.id;
+      const deletedProduct = await MasterProduct.findByIdAndDelete(id);
+      if(deletedProduct){
+        return res.status(200).json(new ApiResponse(200, deletedProduct, "Product deleted successfully", "Success"));
+      } else{
+        return res.status(404).json(new ApiResponse(404, "", "Something went wrong", "Action Failed"));
+      }
   });
 
-  const getAllActiveProducts = asyncHandler(async (req, res) => {
-    const activeProduct = await MasterProduct.find({ status: 'ACTIVE' });
-    if(activeProduct){
-        return res
-          .status(200)
-          .json(
-            new ApiResponse(200, activeProduct, "PRODUCTS FOUND")
-    );
-    }
-    else{
-        return res
-          .status(400)
-          .json(
-            new ApiResponse(400, "Something went wrong, please try again", "ACTION FAILED")
-    ); 
-    }
-  });
-
-export { addProduct, editProduct, getProductbyID, getAllProducts, deleteProductbyID, getAllActiveProducts };
+export { addProduct, editProduct, getProductbyID, getAllProducts, deleteProductbyID };
 
