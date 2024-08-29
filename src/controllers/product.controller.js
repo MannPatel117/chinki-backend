@@ -111,7 +111,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
   const getAllProducts = asyncHandler(async (req, res) => {
     let status= req.query?.status;
     let productType = req.query?.productType;
-    let search = req.query?.search.trim();
+    let search = req.query?.search;
     let pagination = req.query?.pagination;
     const matchConditions = {};
 

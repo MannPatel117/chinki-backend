@@ -367,7 +367,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
   const inventoryStats = asyncHandler(async(req,res) =>{
     let storelocation= req.query.location;
     const lowStockCount = await getLowStockCount(storelocation);
-    const totalActiveProductCount = await MasterProduct.countDocuments({ status: 'ACTIVE' })
+    const totalActiveProductCount = await MasterProduct.countDocuments({ status: 'active' })
     const totalProductCount = await MasterProduct.countDocuments({});
     const totalAccountCount = await Account.countDocuments({});
     const result = {
