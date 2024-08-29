@@ -160,12 +160,33 @@ import jwt from "jsonwebtoken"
   */
 
     const getAllAdmin = asyncHandler(async (req, res) => {
-      const users = await Admin.find({}, '-__v -password');
-      if(users){
-        return res.status(200).json(new ApiResponse(200, users, "Users fetched successfully", "Success"));
-      } else{
-        return res.status(404).json(new ApiResponse(404, "", "Something went wrong", "Action Failed"));
-      }     
+      const { page = 1, limit = 10 } = req.query;
+      try {
+        const aggregate = Admin.aggregate([
+          {
+            $project: {
+              __v: 0,
+              password: 0
+            }
+          }
+        ]);
+    
+        // Apply pagination
+        const options = {
+          page: parseInt(page, 10),
+          limit: parseInt(limit, 10),
+        };
+    
+        const users = await Admin.aggregatePaginate(aggregate, options);
+    
+        if (users.docs.length > 0) {
+          return res.status(200).json(new ApiResponse(200, users, "Users fetched successfully", "Success"));
+        } else {
+          return res.status(404).json(new ApiResponse(404, "", "No users found", "Action Failed"));
+        }
+      } catch (error) {
+        return res.status(500).json(new ApiResponse(500, "", "Something went wrong", "Action Failed"));
+      }   
     });
 
   /*

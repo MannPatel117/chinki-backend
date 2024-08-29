@@ -1,5 +1,6 @@
 import mongoose, {Schema} from "mongoose";
 import  jwt from "jsonwebtoken";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const adminSchema = new Schema({
     userName:{
@@ -33,5 +34,7 @@ adminSchema.methods.generateAccessToken = function(userId){
         expiresIn: process.env.ACCESS_TOKEN_EXPIRY
     })
 }
+
+adminSchema.plugin(mongooseAggregatePaginate)
 
 export const Admin = mongoose.model("Admin", adminSchema)
