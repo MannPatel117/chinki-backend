@@ -12,7 +12,6 @@ import { ApiResponse } from "../utils/ApiResponse.js";
       aliasName,
       barcode,
       productType,
-      supplierId,
       unit,
       mrp,
       discount,
@@ -35,8 +34,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
         barcode,
         productType,
         img : "/products/product",
-        supplierId,
-        unit,
+        supplierId: [],
         mrp,
         discount,
         sellingPrice,
@@ -49,7 +47,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
         return res
           .status(201)
           .json(
-            new ApiResponse(201, user, "Product created", "Success")
+            new ApiResponse(201, productCreated, "Product created", "Success")
           );
       } else {
         return res
