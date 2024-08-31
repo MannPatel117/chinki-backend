@@ -23,7 +23,7 @@ const masterProductSchema = new Schema({
         type: String
     },
     supplierId:{
-        type: String
+        type: [String]
     },
     unit:{
         type: String,
