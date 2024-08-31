@@ -17,7 +17,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
       sellingPrice,
       wholeSalePrice,
       gst,
-      hsnCode
+      hsnCode,
+      status
     } = req.body;
     const productExists = await MasterProduct.findOne({
       $or: [{ itemName }, { aliasName }, { barcode }],
@@ -40,7 +41,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
         wholeSalePrice,
         gst,
         hsnCode,
-        status: "active"
+        status
       });
       if (productCreated) {
         return res
