@@ -175,5 +175,33 @@ import { ApiResponse } from "../utils/ApiResponse.js";
       }
   });
 
-export { addProduct, editProduct, getProductbyID, getAllProducts, deleteProductbyID };
+  /*
+    Function Name - productStats
+    Functionality - Get Products related Stats
+  */
+
+  const productStats = asyncHandler(async(req,res) =>{
+    const totalActiveProductCount = await MasterProduct.countDocuments({ status: 'active' })
+    const totalProductCount = await MasterProduct.countDocuments({});
+    const result = {
+      'totalActiveProductCount': totalActiveProductCount,
+      'totalProductCount' : totalProductCount
+    }
+    if(totalActiveProductCount && totalProductCount){
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, result, "Product Stats fetched", "Success")
+      );
+    }
+    else{
+      return res
+      .status(400)
+      .json(
+        new ApiResponse(404, "", "Something went wrong", "Action Failed")
+      ); 
+    }
+  })
+
+export { addProduct, editProduct, getProductbyID, getAllProducts, deleteProductbyID, productStats };
 
