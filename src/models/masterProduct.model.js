@@ -25,9 +25,6 @@ const masterProductSchema = new Schema({
     supplierId:{
         type: [String]
     },
-    unit:{
-        type: String,
-    },
     mrp:{
         type: Number,
     },
