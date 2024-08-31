@@ -12,7 +12,6 @@ import { ApiResponse } from "../utils/ApiResponse.js";
       aliasName,
       barcode,
       productType,
-      unit,
       mrp,
       discount,
       sellingPrice,
