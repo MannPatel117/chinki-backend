@@ -136,12 +136,12 @@ import { ApiResponse } from "../utils/ApiResponse.js";
     };
 
     const pipeline = [{ $match: matchConditions }];
-    let product = await MasterProduct.aggregatePaginate(MasterProduct.aggregate(pipeline), options);
+    let product = []
 
     if(pagination == "false"){
-      product = await MasterProduct.find({
-        status: "active"
-      })
+      product = await MasterProduct.aggregate(pipeline)
+    } else{
+      product = await MasterProduct.aggregatePaginate(MasterProduct.aggregate(pipeline), options);
     }
 
     if(product){
