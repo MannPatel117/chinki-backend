@@ -177,15 +177,15 @@ import { InventoryProduct } from "../models/inventoryProducts.model.js";
       },
       {
         $project: {
+          itemName: "$masterProduct.itemName", // Flatten the fields from masterProduct
+          barcode: "$masterProduct.barcode",
+          aliasName: "$masterProduct.aliasName",
+          supplierId: "$masterProduct.supplierId", // Include supplierId directly
           location: 1,
           quantity: 1,
           lowWarning: 1,
           status: 1,
           product: 1,
-          itemName: "$masterProduct.itemName", // Flatten the fields from masterProduct
-          barcode: "$masterProduct.barcode",
-          aliasName: "$masterProduct.aliasName",
-          supplierId: "$masterProduct.supplierId", // Include supplierId directly
         }
       }
     ];
