@@ -182,11 +182,10 @@ import { InventoryProduct } from "../models/inventoryProducts.model.js";
           lowWarning: 1,
           status: 1,
           product: 1,
-          "masterProduct.itemName": 1,
-          "masterProduct.barcode": 1,
-          "masterProduct.aliasName": 1,
-          "masterProduct.supplierId": 1, 
-          "masterProduct._id": 1
+          itemName: "$masterProduct.itemName", // Flatten the fields from masterProduct
+          barcode: "$masterProduct.barcode",
+          aliasName: "$masterProduct.aliasName",
+          supplierId: "$masterProduct.supplierId", // Include supplierId directly
         }
       }
     ];
