@@ -194,9 +194,9 @@ import { InventoryProduct } from "../models/inventoryProducts.model.js";
       pipeline.push({
         $match: {
           $or: [
-            { "masterProduct.itemName": { $regex: search, $options: "i" } },
-            { "masterProduct.barcode": { $regex: search, $options: "i" } },
-            { "masterProduct.aliasName": { $regex: search, $options: "i" } }
+            { "itemName": { $regex: search, $options: "i" } },
+            { "barcode": { $regex: search, $options: "i" } },
+            { "aliasName": { $regex: search, $options: "i" } }
           ]
         }
       });
@@ -205,7 +205,7 @@ import { InventoryProduct } from "../models/inventoryProducts.model.js";
     if (supplierId && supplierId !== "") {
       pipeline.push({
         $match: {
-          "masterProduct.supplierId": mongoose.Types.ObjectId(supplierId)
+          "supplierId": supplierId
         }
       });
     }
