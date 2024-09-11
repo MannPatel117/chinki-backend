@@ -1,5 +1,7 @@
 import mongoose, {Schema} from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
+import { InventoryProduct } from "./inventoryProducts.model.js";
+import { MasterProduct } from "./masterProduct.model.js";
 
 const inventorySchema = new Schema({
     location:{
@@ -7,23 +9,6 @@ const inventorySchema = new Schema({
         required: true,
         lowercase: true
     },
-    inventoryProducts: [{
-        product: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'MasterProduct'
-        },
-        barcode:{
-            type: String
-        },
-        quantity: {
-            type: Number,
-            default: 0 
-        },
-        lowWarning:{
-            type: Number,
-            default: 10
-        }
-    }],
     billNumber:{
         type: Number,
     },
@@ -33,5 +18,32 @@ const inventorySchema = new Schema({
 })
 
 inventorySchema.plugin(mongooseAggregatePaginate)
+
+  inventorySchema.post("save", async function (doc) {
+    try {
+      const location = doc.location;
+      const products = await MasterProduct.find({ status: 'active' }).select('barcode _id');
+      for (const product of products) {
+        const newInventoryProduct = new InventoryProduct({
+            location: location,
+            product: product._id,
+            barcode: product.barcode,
+            quantity: 0, 
+            status: "active"
+          });
+        await newInventoryProduct.save();
+      }
+    } catch (error) {
+      console.error("Error initializing inventory products for new product:", error);
+    }
+  });
+
+  inventorySchema.post("findOneAndDelete", async function (doc) {
+    try {
+      await InventoryProduct.deleteMany({ location: doc.location });
+    } catch (error) {
+      console.error("Error deleting inventory products for product:", error);
+    }
+  });
 
 export const Inventory = mongoose.model("Inventory", inventorySchema)
