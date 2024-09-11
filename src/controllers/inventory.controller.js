@@ -3,55 +3,244 @@ import { Inventory } from "../models/inventory.model.js";
 import { MasterProduct } from "../models/masterProduct.model.js";
 import { Account } from "../models/accounts.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { InventoryProduct } from "../models/inventoryProducts.model.js";
 
-  const addInventory = asyncHandler(async (req, res) => {
-  const inventory = req.body;
-  const {
-    location,
-    mannkey
-  } = req.body;
-  let missingArray = [];
-  for (const key in inventory) {
-    if (inventory[key] === "" || inventory[key] === null) {
-      missingArray.push(key);
-    }
-  }
-  if (missingArray.length !== 0) {
-    return res
-      .status(400)
-      .json(new ApiResponse(400, missingArray, "SOME FIELDS ARE MISSING"));
-  } else {
+/*
+    Function Name - addInventory
+    Functionality - Adds Inventory - Admin Only Task
+*/
+
+  const addInventory = asyncHandler(async (req, res) => {;
+    const {
+      location,
+      mannkey
+    } = req.body;
     if (mannkey != process.env.MANN_SECRET_PASSWORD) {
       return res
         .status(409)
-        .json(new ApiResponse(409, "Key is wrong", "UNAUTHORIZED"));
+        .json(new ApiResponse(409,"", "Key is wrong", "Unauthorized"));
     } else {
       const inventoryCreated = await Inventory.create({
         location,
-        inventoryProduct: [],
-        billNumber:0,
-        invoiceNumber:0
+        billNumber:1,
+        invoiceNumber:1
       });
       if (inventoryCreated) {
         return res
           .status(201)
           .json(
-            new ApiResponse(201, inventoryCreated, "INVENTORY SUCCESSFULLY CREATED")
+            new ApiResponse(201, inventoryCreated, "Inventory Created Successfully", "Success")
           );
       } else {
         return res
           .status(409)
           .json(
             new ApiResponse(
-              409,
+              409, "",
               "Could not add inventory, please try again later",
-              "FAILED TO ADD INVENTORY"
+              "Action Failed"
             )
           );
       }
     }
-  }
-});
+  });
+ 
+/*
+    Function Name - getInventorybyLocation
+    Functionality - gets Inventory details by location
+*/
+  
+  const getInventorybyLocation = asyncHandler(async (req, res) => {
+    let storelocation= req.params.location;
+    const inventoryFound = await Inventory.find({
+      location: storelocation
+    }).select('-__v')
+    if(inventoryFound){
+        return res
+          .status(200)
+          .json(
+            new ApiResponse(200, inventoryFound, "Inventory Found Successfully", "Success")
+    );
+    }
+    else{
+        return res
+          .status(400)
+          .json(
+            new ApiResponse(400,"", "Something went wrong, please try again", "Action Failed")
+    ); 
+    }
+  });
+
+/*
+    Function Name - getAllInventory
+    Functionality - gets All Inventory
+*/
+
+  const getAllInventory = asyncHandler(async (req, res) => {
+    const allInventory = await Inventory.find();
+    if(allInventory){
+        return res
+          .status(200)
+          .json(
+            new ApiResponse(200, allInventory, "Inventory found successfully", "Success")
+    );
+    }
+    else{
+        return res
+          .status(400)
+          .json(
+            new ApiResponse(400, "", "Something went wrong, please try again", "Action Failed")
+    ); 
+    }
+  });
+
+/*
+    Function Name - deleteInventorybyID
+    Functionality - deleted Inventory
+*/
+
+  const deleteInventorybyID = asyncHandler(async (req, res) => {
+    let id= req.query?._id;
+    let key=req.query?.key;
+    if(key == process.env.MANN_SECRET_PASSWORD){
+        const deleteInventory = await Inventory.findByIdAndDelete(
+            id
+          )
+          if(deleteInventory){
+              return res
+                .status(200)
+                .json(
+                  new ApiResponse(200, "", "Inventory successfully deleted", "Success")
+          );
+          }
+          else{
+              return res
+                .status(400)
+                .json(
+                  new ApiResponse(400, "", "Something went wrong, please try again", "Action Failed")
+          ); 
+          }
+    }
+    else{
+        return res
+        .status(409)
+        .json(new ApiResponse(409, "Key is wrong", "UNAUTHORIZED"));
+    }
+    
+  });
+
+  /*
+    Function Name - getInventoryDetails
+    Functionality - Get Paginated Inventory Details with params
+  */
+
+  const getInventoryDetails = asyncHandler(async (req, res) => { 
+    let status = req.query?.status?.trim();
+    let search = req.query?.search?.trim();
+    let location = req.query?.location?.trim();
+    let supplierId = req.query?.supplierId?.trim(); 
+    let lowStock = req.query?.lowStock === 'true'; 
+    let pagination = req.query?.pagination === 'true';
+    
+    const matchConditions = {};
+    
+    if (status && status !== "") {
+      matchConditions.status = status;
+    }
+    
+    if (location) {
+      matchConditions.location = location; 
+    }
+    
+    let page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+    
+    const options = {
+      page: page,
+      limit: limit
+    };
+    
+    const pipeline = [
+      {
+        $match: matchConditions
+      },
+      {
+        $lookup: {
+          from: "masterproducts", 
+          localField: "product",
+          foreignField: "_id",
+          as: "masterProduct"
+        }
+      },
+      {
+        $unwind: "$masterProduct"
+      },
+      {
+        $project: {
+          location: 1,
+          quantity: 1,
+          lowWarning: 1,
+          status: 1,
+          product: 1,
+          "masterProduct.itemName": 1,
+          "masterProduct.barcode": 1,
+          "masterProduct.aliasName": 1,
+          "masterProduct.supplierId": 1, 
+          "masterProduct._id": 1
+        }
+      }
+    ];
+    
+    if (search && search !== "") {
+      pipeline.push({
+        $match: {
+          $or: [
+            { "masterProduct.itemName": { $regex: search, $options: "i" } },
+            { "masterProduct.barcode": { $regex: search, $options: "i" } },
+            { "masterProduct.aliasName": { $regex: search, $options: "i" } }
+          ]
+        }
+      });
+    }
+    
+    if (supplierId && supplierId !== "") {
+      pipeline.push({
+        $match: {
+          "masterProduct.supplierId": mongoose.Types.ObjectId(supplierId)
+        }
+      });
+    }
+    
+    if (lowStock) {
+      pipeline.push({
+        $match: {
+          $expr: { $lt: ["$quantity", "$lowWarning"] } 
+        }
+      });
+    }
+    
+    let products;
+    if (pagination) {
+      products = await InventoryProduct.aggregatePaginate(InventoryProduct.aggregate(pipeline), options);
+    } else {
+      products = await InventoryProduct.aggregate(pipeline);
+    }
+    
+    if (products) {
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, products, "Inventory Products fetched successfully", "Success")
+        );
+    } else {
+      return res
+        .status(500)
+        .json(
+          new ApiResponse(500, "", "Something went wrong", "Action Failed")
+        );
+    }
+
+  });
 
   const updateBillNumber= asyncHandler(async (req, res) => {
     let location= req.body?.location;
@@ -165,95 +354,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
       }
   });
 
-  const getInventorybyLocation = asyncHandler(async (req, res) => {
-    let storelocation= req.query.location;
-    const inventoryFound = await Inventory.find({
-      location: storelocation
-    }).select('-inventoryProducts -__v')
-    if(inventoryFound){
-        return res
-          .status(200)
-          .json(
-            new ApiResponse(200, inventoryFound, "INVENTORY FOUND")
-    );
-    }
-    else{
-        return res
-          .status(400)
-          .json(
-            new ApiResponse(400, "Something went wrong, please try again", "ACTION FAILED")
-    ); 
-    }
-  });
-
-  const getInventoryDetailsbyLocation = asyncHandler(async (req, res) => {
-    let storelocation= req.query.location;
-    const inventoryFound = await Inventory.find({
-      location: storelocation
-    }).select('-__v')
-    if(inventoryFound){
-        return res
-          .status(200)
-          .json(
-            new ApiResponse(200, inventoryFound, "INVENTORY FOUND")
-    );
-    }
-    else{
-        return res
-          .status(400)
-          .json(
-            new ApiResponse(400, "Something went wrong, please try again", "ACTION FAILED")
-    ); 
-    }
-  });
-
-  const getAllInventory = asyncHandler(async (req, res) => {
-    const allInventory = await Inventory.find();
-    if(allInventory){
-        return res
-          .status(200)
-          .json(
-            new ApiResponse(200, allInventory, "Inventory FOUND")
-    );
-    }
-    else{
-        return res
-          .status(400)
-          .json(
-            new ApiResponse(400, "Something went wrong, please try again", "ACTION FAILED")
-    ); 
-    }
-  });
-
-  const deleteInventorybyID = asyncHandler(async (req, res) => {
-    let id= req.body?._id;
-    let key=req.body?.key;
-    if(key == process.env.MANN_SECRET_PASSWORD){
-        const deleteInventory = await Inventory.findByIdAndDelete(
-            id
-          )
-          if(deleteInventory){
-              return res
-                .status(200)
-                .json(
-                  new ApiResponse(200, "Inventory successfully deleted", "Inventory DELETED")
-          );
-          }
-          else{
-              return res
-                .status(400)
-                .json(
-                  new ApiResponse(400, "Something went wrong, please try again", "ACTION FAILED")
-          ); 
-          }
-    }
-    else{
-        return res
-        .status(409)
-        .json(new ApiResponse(409, "Key is wrong", "UNAUTHORIZED"));
-    }
-    
-  });
+  
 
   //PERFECT FUNCTIONS
 
@@ -422,5 +523,5 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 
 // editLowWarning
-export { addInventory, updateBillNumber, updateInvoiceNumber, editLowWarning, getInventorybyLocation, getInventoryDetailsbyLocation, getAllInventory, deleteInventorybyID, lowInventory, inventoryStats };
+export { addInventory, updateBillNumber, updateInvoiceNumber, editLowWarning, getInventorybyLocation, getInventoryDetails, getAllInventory, deleteInventorybyID, lowInventory, inventoryStats };
 
