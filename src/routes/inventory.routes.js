@@ -12,7 +12,7 @@ router.route('/inventory').delete(deleteInventorybyID)
 router.route('/inventoryDetail').get(verifyJWT, getInventoryDetails)
 
 
-router.route('/inventoryStats').get(verifyJWT, inventoryStats)
+router.route('/stats').get(verifyJWT, inventoryStats)
 
 router.route('/lowInventory').get(verifyJWT, lowInventory)
 router.route('/lowInventory').patch(verifyJWT, editLowWarning)
