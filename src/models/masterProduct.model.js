@@ -24,9 +24,6 @@ const masterProductSchema = new Schema({
     img:{
         type: String
     },
-    supplierId:{
-        type: String
-    },
     mrp:{
         type: Number,
     },
