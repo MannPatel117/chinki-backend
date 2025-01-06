@@ -35,6 +35,10 @@ const inventoryProductSchema = new Schema({
     enum: ["active", "inactive"],
     default: "active"
   },
+  supplierId:{
+    type: [String],
+    default: []
+  },
   history:{
     type: [inventorytHistorySchema]
   }
