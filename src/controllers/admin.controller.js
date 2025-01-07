@@ -93,7 +93,7 @@ import jwt from "jsonwebtoken"
         );
       }else{
         if (foundUser.password == password) {
-          const tokens = await generateAccessToken(foundUser._id);
+          const tokens = await generateAccessToken(foundUser._id, foundUser._role, foundUser._location);
           let User=foundUser.toObject();
           delete User.password;
           delete User.status;
