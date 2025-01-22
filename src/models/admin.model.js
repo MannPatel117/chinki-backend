@@ -28,9 +28,7 @@ const adminSchema = new Schema({
 
 adminSchema.methods.generateAccessToken = function(userId){
     return jwt.sign({
-        _id: userId,
-        _role: role,
-        _location: location
+        _id: userId
     }, process.env.ACCESS_TOKEN_SECRET,
     {
         expiresIn: process.env.ACCESS_TOKEN_EXPIRY
